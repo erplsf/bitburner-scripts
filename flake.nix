@@ -9,6 +9,7 @@
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = with pkgs; [
           nodejs
+          nodePackages.typescript-language-server
         ];
       };
     };
