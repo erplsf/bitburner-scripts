@@ -12,7 +12,7 @@ const openers: Opener[] = [
   "sqlinject",
 ];
 
-const logPrefix = "[batcher]";
+const logPrefix = "[rooter]";
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL");
@@ -31,7 +31,7 @@ export async function main(ns: NS): Promise<void> {
       applyOpeners(ns, server.name, availableOpeners);
       ns.nuke(server.name);
     }
-    while (currentHackingLevel == ns.getHackingLevel()) await ns.sleep(1000);
+    while (currentHackingLevel == ns.getHackingLevel()) await ns.asleep(1000);
     currentHackingLevel = ns.getHackingLevel();
   }
 }
