@@ -63,6 +63,7 @@ async function hack(ns: NS, host: string, percentage: number): Promise<void> {
 async function minimizeSecurity(ns: NS, host: string): Promise<void> {
     const securityOverMin = ns.getServerSecurityLevel(host) - ns.getServerMinSecurityLevel(host)
     if (securityOverMin != 0) {
+        ns.print(`INFO: security over min: ${securityOverMin}`)
         const securityDecreasePerThread = ns.weakenAnalyze(1)
         const threadsNeeded = Math.ceil(securityOverMin / securityDecreasePerThread)
         ns.print(`INFO: threads needed to minimize security: ${threadsNeeded}`)
@@ -83,9 +84,11 @@ async function minimizeSecurity(ns: NS, host: string): Promise<void> {
 }
 
 async function maximizeMoney(ns: NS, host: string): Promise<void> {
-    const rateToMax = ns.getServerMaxMoney(host) / ns.getServerMoneyAvailable(host)
-    if (rateToMax > 1) {
-        const threadsNeeded = Math.ceil(ns.growthAnalyze(host, rateToMax))
+    const ratioToMax = ns.getServerMoneyAvailable(host) / ns.getServerMaxMoney(host)
+    if (ratioToMax < 1) {
+        const rateToMultiplyToMax = 1 / ratioToMax
+        ns.print(`INFO: ratio to max: ${ratioToMax}`)
+        const threadsNeeded = Math.ceil(ns.growthAnalyze(host, rateToMultiplyToMax))
         ns.print(`INFO: threads needed to maximize money: ${threadsNeeded}`)
         const job: Job = {
             fn: 'hgw.js',
