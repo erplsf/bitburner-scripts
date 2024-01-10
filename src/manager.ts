@@ -14,6 +14,12 @@ export async function main(ns: NS): Promise<void> {
   for (;;) {
     // if host not provided, select a best one
     if (!hostProvided) {
+      log(
+        ns,
+        LogLevel.Info,
+        logPrefix,
+        "static host not provided, selecting the best server according to the ranking dynamically...",
+      );
       const hackingThreshold = Math.max(1, ns.getHackingLevel() / 2);
       const candidateServers = serverList(ns)
         .filter((s) => s.root)
