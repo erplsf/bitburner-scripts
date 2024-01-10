@@ -26,9 +26,16 @@ export async function main(ns: NS): Promise<void> {
 
 export function calcMaxThreads(ns: NS, job: Job): number {
     const ramCost = job.ramOverride ? job.ramOverride : ns.getScriptRam(job.fn)
-    const totalRamCost = ramCost * job.threads
-    const usedRam = Math.min(totalFreeRam(ns), totalRamCost)
-    const usedThreads = Math.floor(usedRam / ramCost)
+    let totalRamCost = ramCost * job.threads
+    let servers = serverList(ns).filter(server => server.root)
+    let usedThreads = 0
+    for (const server of servers) {
+        if (totalRamCost <= 0) break
+        const maxThreadsForServer = Math.floor(Math.min(server.freeRAM, totalRamCost) / ramCost)
+        const actualThreads = Math.min(job.threads, maxThreadsForServer)
+        usedThreads += actualThreads
+        totalRamCost -= actualThreads * ramCost
+    }
     return usedThreads
 }
 
@@ -37,7 +44,10 @@ export async function schedule(ns: NS, job: Job): Promise<number[]> {
     // figure out the real RAM cost - if there's an override, use that
     let ramCost = job.ramOverride ? job.ramOverride : ns.getScriptRam(job.fn)
     let totalRamCost = ramCost * job.threads
-    if (!job.splittable && totalFreeRam(ns) < totalRamCost) {
+    ns.print(`INFO: [scheduler] script info - threads: ${job.threads}, ramCost: ${ramCost}, totalRamCost: ${totalRamCost}`)
+    const tfRAM = totalFreeRam(ns)
+    ns.print(`INFO: [scheduler] total free RAM: ${tfRAM}`)
+    if (!job.splittable && tfRAM < totalRamCost) {
         ns.print(`ERROR: not enough total free RAM to schedule the job!`)
         ns.exit()
     }
@@ -52,9 +62,13 @@ export async function schedule(ns: NS, job: Job): Promise<number[]> {
         // sort servers in ascending order by freeRam
         servers.sort((a, b) => a.freeRAM - b.freeRAM)
         while (servers.length > 0) {
+            if (totalRamCost <= 0) break
             const server = servers.shift()!
-            const maxThreadsForServer = Math.floor(server.freeRAM / ramCost)
+            ns.print(`INFO: [scheduler] scheduling on ${server.name}, free RAM: ${server.freeRAM}`)
+            const maxThreadsForServer = Math.floor(Math.min(server.freeRAM, totalRamCost) / ramCost)
+            // ns.print(`INFO: [scheduler] max threads: ${maxThreadsForServer}`)
             const actualThreads = Math.min(job.threads, maxThreadsForServer)
+            // ns.print(`INFO: [scheduler] actual threads: ${actualThreads}`)
             ns.scp(job.fn, server.name, 'home')
             const pid = ns.exec(job.fn, server.name, {ramOverride: ramCost, threads: actualThreads}, ...job.args)
             if (pid === 0) {
@@ -62,10 +76,12 @@ export async function schedule(ns: NS, job: Job): Promise<number[]> {
                 ns.exit()
             }
             pids.push(pid)
+            const scheduledRam = actualThreads * ramCost
+            ns.print(`INFO: [scheduler] scheduled ${scheduledRam} GB on ${server.name}`)
             totalRamCost -= actualThreads * ramCost
-            if (totalRamCost == 0) break
+            ns.print(`INFO: [scheduler] total ram left: ${totalRamCost}`)
         }
-        if (totalRamCost == 0) break
+        if (totalRamCost <= 0) break
         // if we reached this place, then we couldn't fit all things at once in RAM, so we must wait until they finish
         ns.print("INFO: waiting in scheduler for RAM to free up to schedule the rest of the job...")
         await waitTillPidsDie(ns, pids, 1000)
