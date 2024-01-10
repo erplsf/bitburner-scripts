@@ -44,7 +44,7 @@ export async function schedule(ns: NS, job: Job): Promise<number[]> {
         // sort servers in ascending order by freeRam
         servers.sort((a, b) => a.freeRAM - b.freeRAM)
         while (servers.length > 0) {
-            const server = servers.pop()!
+            const server = servers.shift()!
             const maxThreadsForServer = Math.floor(server.freeRAM / ramCost)
             const actualThreads = Math.min(job.threads, maxThreadsForServer)
             ns.scp(job.fn, server.name, 'home')
