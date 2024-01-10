@@ -64,7 +64,8 @@ async function minimizeSecurity(ns: NS, host: string): Promise<void> {
     const securityOverMin = ns.getServerSecurityLevel(host) - ns.getServerMinSecurityLevel(host)
     if (securityOverMin != 0) {
         ns.print(`INFO: security over min: ${securityOverMin}`)
-        const securityDecreasePerThread = ns.weakenAnalyze(1)
+        // const securityDecreasePerThread = ns.weakenAnalyze(1)
+        const securityDecreasePerThread = 0.05 // HACK: to optimize the RAM usage
         const threadsNeeded = Math.ceil(securityOverMin / securityDecreasePerThread)
         ns.print(`INFO: threads needed to minimize security: ${threadsNeeded}`)
         const job: Job = {
