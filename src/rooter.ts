@@ -1,6 +1,6 @@
 import { NS } from "@ns";
 import { serverList } from "lib/servers";
-import { buildLogFn } from "lib/logging";
+import { buildLogFn, log, LogLevel } from "lib/logging";
 
 type Opener = "brutessh" | "ftpcrack" | "relaysmtp" | "httpworm" | "sqlinject";
 
@@ -30,7 +30,14 @@ export async function main(ns: NS): Promise<void> {
     for (const server of rootableServers) {
       applyOpeners(ns, server.name, availableOpeners);
       ns.nuke(server.name);
+      log(ns, LogLevel.Info, logPrefix, `Rooted ${server.name}`);
     }
+    log(
+      ns,
+      LogLevel.Info,
+      logPrefix,
+      `Waiting until hacking level increases...`,
+    );
     while (currentHackingLevel == ns.getHackingLevel()) await ns.asleep(1000);
     currentHackingLevel = ns.getHackingLevel();
   }
