@@ -41,3 +41,13 @@ export function isServerPrepared(ns: NS, host: string): boolean {
   return ns.getServerMoneyAvailable(host) == ns.getServerMaxMoney(host) &&
          ns.getServerSecurityLevel(host) == ns.getServerMinSecurityLevel(host)
 }
+
+export function hackTargetsRanked(ns: NS): string[] {
+  const hackingThreshold = Math.max(1, ns.getHackingLevel() / 2)
+  const candidateServers = serverList(ns)
+      .filter(s => s.root)
+      .filter(s => s.requiredLevel <= hackingThreshold)
+  // sort in the descending order, so the best candidate is first in the list
+  candidateServers.sort((a, b) => b.score - a.score)
+  return candidateServers.map(s => s.name)
+}
