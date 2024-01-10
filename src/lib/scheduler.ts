@@ -65,6 +65,7 @@ export async function schedule(ns: NS, job: Job): Promise<number[]> {
             totalRamCost -= actualThreads * ramCost
             if (totalRamCost == 0) break
         }
+        if (totalRamCost == 0) break
         // if we reached this place, then we couldn't fit all things at once in RAM, so we must wait until they finish
         ns.print("INFO: waiting in scheduler for RAM to free up to schedule the rest of the job...")
         await waitTillPidsDie(ns, pids, 1000)
