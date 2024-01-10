@@ -55,7 +55,7 @@ async function minimizeSecurity(ns: NS, host: string): Promise<void> {
 async function maximizeMoney(ns: NS, host: string): Promise<void> {
     const rateToMax = ns.getServerMaxMoney(host) / ns.getServerMoneyAvailable(host)
     if (rateToMax > 1) {
-        const threadsNeeded = ns.growthAnalyze(host, rateToMax)
+        const threadsNeeded = Math.ceil(ns.growthAnalyze(host, rateToMax))
         ns.print(`INFO: threads needed to maximize money: ${threadsNeeded}`)
         const job: Job = {
             fn: 'hgw.js',
