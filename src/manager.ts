@@ -2,6 +2,7 @@ import { NS } from "@ns";
 import { isServerPrepared, serverList } from "lib/servers";
 import { calcMaxThreads, Job, schedule, waitTillPidsDie } from "lib/scheduler";
 import { buildLogFn, log, LogLevel } from "lib/logging";
+import { round } from "lib/math";
 
 const logPrefix = '[manager]'
 
@@ -49,7 +50,7 @@ async function hack(ns: NS, host: string, percentage: number): Promise<void> {
         fn: 'hgw.js',
         threads: threadsNeeded,
         args: ['hack', host],
-        ramOverride: ns.getFunctionRamCost('hack') + 1.6,
+        ramOverride: round(ns.getFunctionRamCost('hack') + 1.6, 2),
         splittable: true,
     }
     const fittableThreads = calcMaxThreads(ns, job)
