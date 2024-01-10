@@ -10,9 +10,10 @@ export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL");
   ns.write(buildLogFn(ns.getScriptName()), "");
   let host = ns.args.at(0);
+  const hostProvided = !!host;
   for (;;) {
     // if host not provided, select a best one
-    if (!host) {
+    if (!hostProvided) {
       const hackingThreshold = Math.max(1, ns.getHackingLevel() / 2);
       const candidateServers = serverList(ns)
         .filter((s) => s.root)
