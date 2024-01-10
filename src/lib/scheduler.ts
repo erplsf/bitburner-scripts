@@ -64,7 +64,7 @@ export async function schedule(ns: NS, job: Job): Promise<number[]> {
         while (servers.length > 0) {
             if (totalRamCost <= 0) break
             const server = servers.shift()!
-            ns.print(`INFO: [scheduler] scheduling on ${server.name}, free RAM: ${server.freeRAM}`)
+            // ns.print(`INFO: [scheduler] scheduling on ${server.name}, free RAM: ${server.freeRAM}`)
             const maxThreadsForServer = Math.floor(Math.min(server.freeRAM, totalRamCost) / ramCost)
             // ns.print(`INFO: [scheduler] max threads: ${maxThreadsForServer}`)
             const actualThreads = Math.min(job.threads, maxThreadsForServer)
@@ -77,13 +77,13 @@ export async function schedule(ns: NS, job: Job): Promise<number[]> {
             }
             pids.push(pid)
             const scheduledRam = actualThreads * ramCost
-            ns.print(`INFO: [scheduler] scheduled ${scheduledRam} GB on ${server.name}`)
+            // ns.print(`INFO: [scheduler] scheduled ${scheduledRam} GB on ${server.name}`)
             totalRamCost -= actualThreads * ramCost
-            ns.print(`INFO: [scheduler] total ram left: ${totalRamCost}`)
+            // ns.print(`INFO: [scheduler] total ram left: ${totalRamCost}`)
         }
         if (totalRamCost <= 0) break
         // if we reached this place, then we couldn't fit all things at once in RAM, so we must wait until they finish
-        ns.print("INFO: waiting in scheduler for RAM to free up to schedule the rest of the job...")
+        ns.print("ERROR: waiting in scheduler for RAM to free up to schedule the rest of the job...")
         await waitTillPidsDie(ns, pids, 1000)
     }
     return pids
