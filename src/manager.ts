@@ -7,20 +7,23 @@ const logPrefix = '[manager]'
 
 export async function main(ns: NS): Promise<void> {
     ns.disableLog("ALL")
-    const hackingThreshold = Math.max(1, ns.getHackingLevel() / 2)
-    const candidateServers = serverList(ns)
-        .filter(s => s.root)
-        .filter(s => hackingThreshold >= s.requiredLevel)
-    // sort in the descending order, so the best candidate is first in the list
-    if (candidateServers.length == 0) {
-        log(ns, LogLevel.Error, logPrefix, "no possible server to hack exiting...")
-        ns.exit()
-    } // nothing to hack, return early
-    candidateServers.sort((a, b) => b.score - a.score)
-    const host = candidateServers[0].name
+    let host = ns.args.at(0)
+    if (!host) {
+        const hackingThreshold = Math.max(1, ns.getHackingLevel() / 2)
+        const candidateServers = serverList(ns)
+            .filter(s => s.root)
+            .filter(s => s.requiredLevel <= hackingThreshold)
+        // sort in the descending order, so the best candidate is first in the list
+        if (candidateServers.length == 0) {
+            log(ns, LogLevel.Error, logPrefix, "no possible server to hack exiting...")
+            ns.exit()
+        } // nothing to hack, return early
+        candidateServers.sort((a, b) => b.score - a.score)
+        host = candidateServers[0].name
+    }
     ns.print(`INFO: selected ${host} as the target`)
     ns.print("INFO: preparing server...")
-    await prepareServer(ns, host)
+    await prepareServer(ns, host as string)
 }
 
 async function prepareServer(ns: NS, host: string): Promise<void> {
