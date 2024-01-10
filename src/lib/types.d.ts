@@ -1,9 +1,9 @@
-type NSArg = (string | number | boolean)
+type NSArg = string | number | boolean;
 
-type HGWFunctionKey = 'hack' | 'grow' | 'weaken'
+type HGWFunctionKey = "hack" | "grow" | "weaken";
 
 interface HGWArgs {
-    fnKey: HGWFunctionKey,
-    target: string,
-    delay: number,
+  fnKey: HGWFunctionKey;
+  target: string;
+  delay: number;
 }
