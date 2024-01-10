@@ -1,10 +1,11 @@
 import { NS } from "@ns";
 import { serverList } from "lib/servers";
 
-type Opener = 'brutessh'
+type Opener = 'brutessh' | 'ftpcrack'
 
 const openers: Opener[] = [
     'brutessh'
+    'ftpcrack'
 ]
 
 export async function main(ns: NS): Promise<void> {
@@ -35,6 +36,10 @@ function applyOpeners(ns: NS, host: string, openers: Opener[]) {
         switch(opener) {
                 case 'brutessh': {
                     ns.brutessh(host)
+                    break
+                }
+                case 'ftpcrack': {
+                    ns.ftpcrack(host)
                     break
                 }
         }
