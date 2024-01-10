@@ -4,8 +4,8 @@ import { serverList } from "lib/servers";
 type Opener = 'brutessh' | 'ftpcrack'
 
 const openers: Opener[] = [
-    'brutessh'
-    'ftpcrack'
+    'brutessh',
+    'ftpcrack',
 ]
 
 export async function main(ns: NS): Promise<void> {
