@@ -1,12 +1,13 @@
 import { NS } from "@ns";
 import { isServerPrepared, serverList } from "lib/servers";
 import { calcMaxThreads, Job, schedule, waitTillPidsDie } from "lib/scheduler";
-import { log, LogLevel } from "lib/logging";
+import { buildLogFn, log, LogLevel } from "lib/logging";
 
 const logPrefix = '[manager]'
 
 export async function main(ns: NS): Promise<void> {
     ns.disableLog("ALL")
+    ns.write(buildLogFn(ns.getScriptName()), '')
     let host = ns.args.at(0)
     for (;;) {
         // if host not provided, select a best one
