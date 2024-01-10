@@ -24,6 +24,14 @@ export async function main(ns: NS): Promise<void> {
     await schedule(ns, job)
 }
 
+export function calcMaxThreads(ns: NS, job: Job): number {
+    const ramCost = job.ramOverride ? job.ramOverride : ns.getScriptRam(job.fn)
+    const totalRamCost = ramCost * job.threads
+    const usedRam = Math.min(totalFreeRam(ns), totalRamCost)
+    const usedThreads = Math.floor(usedRam / ramCost)
+    return usedThreads
+}
+
 export async function schedule(ns: NS, job: Job): Promise<number[]> {
     ns.print(`INFO: Scheduling ${job.fn}`)
     // figure out the real RAM cost - if there's an override, use that
@@ -57,7 +65,9 @@ export async function schedule(ns: NS, job: Job): Promise<number[]> {
             totalRamCost -= actualThreads * ramCost
             if (totalRamCost == 0) break
         }
-        while (totalFreeRam(ns) < totalRamCost) await ns.asleep(1000)
+        // if we reached this place, then we couldn't fit all things at once in RAM, so we must wait until they finish
+        ns.print("INFO: waiting in scheduler for RAM to free up to schedule the rest of the job...")
+        await waitTillPidsDie(ns, pids, 1000)
     }
     return pids
 }

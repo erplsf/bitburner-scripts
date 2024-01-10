@@ -1,6 +1,6 @@
 import { NS } from "@ns";
 import { isServerPrepared, serverList } from "lib/servers";
-import { Job, schedule, waitTillPidsDie } from "lib/scheduler";
+import { calcMaxThreads, Job, schedule, waitTillPidsDie } from "lib/scheduler";
 import { log, LogLevel } from "lib/logging";
 
 const logPrefix = '[manager]'
@@ -51,6 +51,9 @@ async function hack(ns: NS, host: string, percentage: number): Promise<void> {
         ramOverride: ns.getFunctionRamCost('hack') + 1.6,
         splittable: true,
     }
+    const fittableThreads = calcMaxThreads(ns, job)
+    if (fittableThreads < job.threads) ns.print(`INFO: cannot fit all threads at once in memory, will schedule lower amount: ${fittableThreads}`)
+    job.threads = Math.min(job.threads, fittableThreads)
     let pids = await schedule(ns, job)
     ns.print(`INFO: all required threads scheduled, waiting for hack jobs to finish...`)
     await waitTillPidsDie(ns, pids, 1000) // TODO: naive delay, can be improved with scripts writing back info
@@ -69,6 +72,9 @@ async function minimizeSecurity(ns: NS, host: string): Promise<void> {
             ramOverride: ns.getFunctionRamCost('weaken') + 1.6,
             splittable: true,
         }
+        const fittableThreads = calcMaxThreads(ns, job)
+        if (fittableThreads < job.threads) ns.print(`INFO: cannot fit all threads at once in memory, will schedule lower amount: ${fittableThreads}`)
+        job.threads = Math.min(job.threads, fittableThreads)
         let pids = await schedule(ns, job)
         ns.print(`INFO: all required threads scheduled, waiting for weaken jobs to finish...`)
         await waitTillPidsDie(ns, pids, 1000) // TODO: naive delay, can be improved with scripts writing back info
@@ -87,6 +93,9 @@ async function maximizeMoney(ns: NS, host: string): Promise<void> {
             ramOverride: ns.getFunctionRamCost('grow') + 1.6,
             splittable: true,
         }
+        const fittableThreads = calcMaxThreads(ns, job)
+        if (fittableThreads < job.threads) ns.print(`INFO: cannot fit all threads at once in memory, will schedule lower amount: ${fittableThreads}`)
+        job.threads = Math.min(job.threads, fittableThreads)
         let pids = await schedule(ns, job)
         ns.print(`INFO: all required threads scheduled, waiting for grow jobs to finish...`)
         await waitTillPidsDie(ns, pids, 1000) // TODO: naive delay, can be improved with scripts writing back info
