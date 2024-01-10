@@ -1,7 +1,7 @@
 import { NS } from "@ns";
-import { serverList, Server } from "lib/servers";
+import { serverList } from "lib/servers";
 
-interface Job {
+export interface Job {
     fn: string,
     threads: number
     args: NSArg[]
@@ -11,6 +11,17 @@ interface Job {
 
 function totalFreeRam(ns: NS): number {
     return serverList(ns).filter(s => s.root).map(s => s.freeRAM).reduce((acc, v) => acc + v)
+}
+
+export async function main(ns: NS): Promise<void> {
+    const fn = ns.args[0] as string
+    const args = ns.args.slice(1)
+    const job: Job = {
+        fn: fn,
+        threads: 1,
+        args: args,
+    }
+    await schedule(ns, job)
 }
 
 export async function schedule(ns: NS, job: Job): Promise<number[]> {
@@ -48,6 +59,9 @@ export async function schedule(ns: NS, job: Job): Promise<number[]> {
         }
         while (totalFreeRam(ns) < totalRamCost) await ns.asleep(1000)
     }
-    // return only those pids that still exist
-    return pids.filter(p => !!ns.getRunningScript(p))
+    return pids
+}
+
+export async function waitTillPidsDie(ns: NS, pids: number[], millis: number): Promise<void> {
+    while ((pids = pids.filter(p => !!ns.getRunningScript(p))).length != 0) await ns.sleep(millis)
 }
