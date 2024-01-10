@@ -1,10 +1,10 @@
 import { NS } from "@ns";
 
 export async function main(ns: NS): Promise<void> {
-  ns.tprint(serverList(ns));
+  ns.tprint(serverList(ns).filter(s => s.freeRAM > 0).sort((a, b) => a.freeRAM - b.freeRAM));
 }
 
-interface Server {
+export interface Server {
   name: string
   freeRAM: number
   root: boolean
