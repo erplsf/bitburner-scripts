@@ -16,7 +16,7 @@ const logPrefix = "[rooter]";
 
 export async function main(ns: NS): Promise<void> {
   ns.disableLog("ALL");
-  ns.write(buildLogFn(ns.getScriptName()), "");
+  ns.write(buildLogFn(ns.getScriptName()), "", "w");
   let currentHackingLevel = ns.getHackingLevel();
   for (;;) {
     const nonRootedServers = serverList(ns).filter((server) => !server.root);

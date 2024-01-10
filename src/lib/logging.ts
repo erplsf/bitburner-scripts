@@ -13,9 +13,10 @@ export function log(
   prefix: string,
   message: string,
 ): void {
-  const finalMessage = `${level}: ${prefix} ${message}`;
-  ns.print(message);
-  ns.write(buildLogFn(ns.getScriptName()), finalMessage, "a");
+  const time = new Date().toISOString();
+  const finalMessage = `${time} ${level}: ${prefix} ${message}`;
+  ns.print(finalMessage);
+  ns.write(buildLogFn(ns.getScriptName()), finalMessage + "\n", "a");
 }
 
 export function buildLogFn(scriptFn: string): string {
